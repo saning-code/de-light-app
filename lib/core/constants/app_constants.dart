@@ -20,8 +20,8 @@ class AppEnv {
   static String get apiBaseUrl {
     switch (_env) {
       case 'prod':
-        // ✅ Replace with your Railway or Render URL after deploying the API
-        return 'https://de-light-api.up.railway.app/api/v1';
+        // ✅ Live API on Render
+        return 'https://de-light-api.onrender.com/api/v1';
       case 'staging':
         return 'https://de-light-api-staging.up.railway.app/api/v1';
       case 'dev':
