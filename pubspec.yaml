@@ -1,0 +1,47 @@
+name: de_light_app
+description: "De-Light Smart Business Manager — Offline-First POS & Inventory for Small Businesses"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State Management
+  provider: ^6.1.2
+
+  # Networking
+  dio: ^5.4.0
+  connectivity_plus: ^5.0.2
+
+  # UI & Charts
+  google_fonts: ^6.1.0
+  fl_chart: ^0.66.2
+  shimmer: ^3.0.0
+  badges: ^3.1.2
+
+  # Security & Storage
+  flutter_secure_storage: ^9.0.0
+  shared_preferences: ^2.2.2
+
+  # Utilities
+  intl: ^0.20.2
+  uuid: ^4.2.2
+  path_provider: ^2.1.1
+  path: ^1.8.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/

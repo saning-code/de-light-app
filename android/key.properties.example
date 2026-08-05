@@ -1,0 +1,13 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Android Release Keystore Config
+# Copy this file to: android/key.properties  (DO NOT commit key.properties)
+#
+# To generate a keystore (run once):
+#   keytool -genkey -v -keystore android/app/delight-release.jks
+#           -alias delight -keyalg RSA -keysize 2048 -validity 10000
+# ─────────────────────────────────────────────────────────────────────────────
+
+storePassword=your_keystore_password
+keyPassword=your_key_password
+keyAlias=delight
+storeFile=delight-release.jks
