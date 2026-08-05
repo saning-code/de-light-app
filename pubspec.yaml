@@ -4,7 +4,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.2.0 <4.0.0'
+  sdk: '>=3.4.0 <4.0.0'
 
 dependencies:
   flutter:
@@ -17,23 +17,17 @@ dependencies:
 
   # Networking
   dio: ^5.4.0
-  connectivity_plus: ^5.0.2
 
   # UI & Charts
-  google_fonts: ^6.1.0
   fl_chart: ^0.66.2
-  shimmer: ^3.0.0
-  badges: ^3.1.2
 
   # Security & Storage
   flutter_secure_storage: ^9.0.0
   shared_preferences: ^2.2.2
 
   # Utilities
-  intl: ^0.18.1
+  intl: any
   uuid: ^4.2.2
-  path_provider: ^2.1.1
-  path: ^1.8.3
 
 dev_dependencies:
   flutter_test:
