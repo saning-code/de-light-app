@@ -185,9 +185,17 @@ class ProductProvider extends ChangeNotifier {
 
   Future<String?> adjustStock(int productId, String type, double qty) async {
     try {
+      // Convert type + qty to new_quantity that the API expects
+      ProductModel? current = _products.firstWhere((p) => p.id == productId, orElse: () => throw Exception('not found'));
+      double newQty;
+      if (type == 'in')  newQty = current.quantity + qty;
+      else if (type == 'out') newQty = (current.quantity - qty).clamp(0, double.infinity);
+      else newQty = qty; // 'set'
+
       final response = await _api.adjustStock(productId, {
-        'type': type,   // 'in' | 'out' | 'set'
-        'quantity': qty,
+        'new_quantity': newQty,
+        'type': type == 'in' ? 'adjustment' : type == 'out' ? 'adjustment' : 'adjustment',
+        'reason': 'Manual stock adjustment',
       });
       final body = ApiResponse.fromResponse(response);
       if (body.success) {
