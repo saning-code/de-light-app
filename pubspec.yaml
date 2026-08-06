@@ -1,7 +1,7 @@
 name: de_light_app
 description: "De-Light Smart Business Manager — Offline-First POS & Inventory for Small Businesses"
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.1.0+2
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
