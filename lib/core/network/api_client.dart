@@ -1,5 +1,7 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/app_constants.dart';
 
 class ApiClient {
@@ -28,21 +30,76 @@ class ApiClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          final token = await _storage.read(key: AppConstants.kJwtToken);
-          if (token != null) {
+          // Use getToken() which handles both web and mobile correctly
+          final token = await getToken();
+          if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
           return handler.next(options);
         },
         onError: (DioException error, handler) async {
           if (error.response?.statusCode == 401) {
-            // Clear stale token — app router will redirect to login
-            await _storage.delete(key: AppConstants.kJwtToken);
+            await clearToken();
           }
           return handler.next(error);
         },
       ),
     );
+  }
+
+  // ─── Token helpers — web uses SharedPreferences, mobile uses SecureStorage ──
+
+  Future<void> saveToken(String token) async {
+    if (kIsWeb) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(AppConstants.kJwtToken, token);
+    } else {
+      await _storage.write(key: AppConstants.kJwtToken, value: token);
+    }
+  }
+
+  Future<void> clearToken() async {
+    if (kIsWeb) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(AppConstants.kJwtToken);
+      await prefs.remove(AppConstants.kUserJson);
+      await prefs.remove(AppConstants.kTenantJson);
+      await prefs.remove(AppConstants.kShopJson);
+    } else {
+      await _storage.deleteAll();
+    }
+  }
+
+  Future<String?> getToken() async {
+    if (kIsWeb) {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(AppConstants.kJwtToken);
+    }
+    return _storage.read(key: AppConstants.kJwtToken);
+  }
+
+  Future<bool> get hasToken async {
+    final token = await getToken();
+    return token != null && token.isNotEmpty;
+  }
+
+  // ─── Generic storage helpers ──────────────────────────────────────────────
+
+  Future<void> saveString(String key, String value) async {
+    if (kIsWeb) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(key, value);
+    } else {
+      await _storage.write(key: key, value: value);
+    }
+  }
+
+  Future<String?> readString(String key) async {
+    if (kIsWeb) {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(key);
+    }
+    return _storage.read(key: key);
   }
 
   // ─── Auth ─────────────────────────────────────────────────────────────────
@@ -189,22 +246,6 @@ class ApiClient {
       dio.get('/sync/status', queryParameters: {
         if (deviceId != null) 'device_id': deviceId,
       });
-
-  // ─── Token helpers ────────────────────────────────────────────────────────
-
-  Future<void> saveToken(String token) =>
-      _storage.write(key: AppConstants.kJwtToken, value: token);
-
-  Future<void> clearToken() =>
-      _storage.delete(key: AppConstants.kJwtToken);
-
-  Future<String?> getToken() =>
-      _storage.read(key: AppConstants.kJwtToken);
-
-  Future<bool> get hasToken async {
-    final token = await _storage.read(key: AppConstants.kJwtToken);
-    return token != null && token.isNotEmpty;
-  }
 }
 
 /// Parses a Dio response body that follows the API's standard shape:

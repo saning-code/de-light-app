@@ -1,8 +1,6 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
-
+import 'package:flutter/foundation.dart';
 import '../../data/models/user_model.dart';
 import '../constants/app_constants.dart';
 import '../network/api_client.dart';
@@ -11,7 +9,6 @@ enum AuthStatus { unknown, authenticated, unauthenticated }
 
 class AuthProvider extends ChangeNotifier {
   final ApiClient _api = ApiClient();
-  final _storage = const FlutterSecureStorage();
 
   AuthStatus _status = AuthStatus.unknown;
   UserModel? _user;
@@ -42,7 +39,7 @@ class AuthProvider extends ChangeNotifier {
     _status = AuthStatus.unknown;
     notifyListeners();
 
-    final token = await _storage.read(key: AppConstants.kJwtToken);
+    final token = await _api.getToken();
     if (token == null || token.isEmpty) {
       _status = AuthStatus.unauthenticated;
       notifyListeners();
@@ -207,36 +204,32 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> _saveAndApplySession(Map<String, dynamic> data) async {
     _applySessionData(data);
-    // Cache user/tenant/shop for offline restoration
+    final api = _api;
     if (_user != null) {
-      await _storage.write(
-          key: AppConstants.kUserJson, value: jsonEncode(_user!.toJson()));
+      await api.saveString(AppConstants.kUserJson, jsonEncode(_user!.toJson()));
     }
     if (_tenant != null) {
-      await _storage.write(
-          key: AppConstants.kTenantJson, value: jsonEncode(_tenant!.toJson()));
+      await api.saveString(AppConstants.kTenantJson, jsonEncode(_tenant!.toJson()));
     }
     if (_shop != null) {
-      await _storage.write(
-          key: AppConstants.kShopJson, value: jsonEncode(_shop!.toJson()));
+      await api.saveString(AppConstants.kShopJson, jsonEncode(_shop!.toJson()));
     }
   }
 
   Future<void> _loadCachedSession() async {
-    final userJson = await _storage.read(key: AppConstants.kUserJson);
-    final tenantJson = await _storage.read(key: AppConstants.kTenantJson);
-    final shopJson = await _storage.read(key: AppConstants.kShopJson);
+    final api = _api;
+    final userJson   = await api.readString(AppConstants.kUserJson);
+    final tenantJson = await api.readString(AppConstants.kTenantJson);
+    final shopJson   = await api.readString(AppConstants.kShopJson);
 
     if (userJson != null) {
       _user = UserModel.fromJson(jsonDecode(userJson) as Map<String, dynamic>);
     }
     if (tenantJson != null) {
-      _tenant = TenantModel.fromJson(
-          jsonDecode(tenantJson) as Map<String, dynamic>);
+      _tenant = TenantModel.fromJson(jsonDecode(tenantJson) as Map<String, dynamic>);
     }
     if (shopJson != null) {
-      _shop = ShopModel.fromJson(
-          jsonDecode(shopJson) as Map<String, dynamic>);
+      _shop = ShopModel.fromJson(jsonDecode(shopJson) as Map<String, dynamic>);
     }
     if (_user?.isOwner == true) {
       _permissions = PermissionsModel.ownerDefault();
@@ -248,6 +241,6 @@ class AuthProvider extends ChangeNotifier {
     _tenant = null;
     _shop = null;
     _permissions = null;
-    await _storage.deleteAll();
+    await _api.clearToken();
   }
 }
