@@ -16,8 +16,8 @@ class ApiClient {
     dio = Dio(
       BaseOptions(
         baseUrl: AppConstants.baseUrl,
-        connectTimeout: AppConstants.connectTimeout,
-        receiveTimeout: AppConstants.receiveTimeout,
+        connectTimeout: const Duration(seconds: 60),
+        receiveTimeout: const Duration(seconds: 60),
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -240,11 +240,12 @@ String dioErrorMessage(DioException e) {
     return 'Server error (${e.response!.statusCode})';
   }
   if (e.type == DioExceptionType.connectionTimeout ||
-      e.type == DioExceptionType.receiveTimeout) {
-    return 'Connection timed out. Check your internet.';
+      e.type == DioExceptionType.receiveTimeout ||
+      e.type == DioExceptionType.sendTimeout) {
+    return 'Server is waking up — please wait 30 seconds and try again.';
   }
   if (e.type == DioExceptionType.connectionError) {
-    return 'Cannot connect to server. Are you online?';
+    return 'Cannot connect to server. Check your internet connection.';
   }
   return e.message ?? 'Unknown error';
 }
